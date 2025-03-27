@@ -1,0 +1,109 @@
+<div class="bg-white rounded-lg shadow-lg">
+  <div class="p-6 border-b border-blue-100">
+    <h2 class="text-2xl font-semibold text-blue-800">{{ title }}</h2>
+    <p *ngIf="showItemCount" class="text-blue-600">{{ items.length }} {{ itemCountLabel }}</p>
+  </div>
+
+  <ng-container *ngIf="items.length > 0; else noItems">
+    <!-- Mode tableau avec en-têtes personnalisables -->
+    <div *ngIf="useTableMode && columns.length > 0" class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead>
+          <tr class="bg-blue-50">
+            <th *ngFor="let column of columns"
+                class="px-6 py-3 text-left text-xs font-medium text-blue-800 uppercase tracking-wider border-b border-blue-200"
+                [class.cursor-pointer]="column.sortable"
+               >
+              {{ column.label }}
+            </th>
+            <th *ngIf="showEditButton || showDeleteButton" class="px-6 py-3 text-right text-xs font-medium text-blue-800 uppercase tracking-wider border-b border-blue-200">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-blue-100">
+          <tr *ngFor="let item of items" class="hover:bg-blue-50 transition-colors">
+            <td *ngFor="let column of columns" class="px-6 py-4 whitespace-nowrap">
+              <ng-container *ngIf="column.template; else defaultCellTemplate">
+                <ng-container *ngTemplateOutlet="column.template; context: { $implicit: item, column: column.key }"></ng-container>
+              </ng-container>
+              <ng-template #defaultCellTemplate>
+                {{ getCellValue(item, column) }}
+              </ng-template>
+            </td>
+            <td *ngIf="showEditButton || showDeleteButton" class="px-6 py-4 whitespace-nowrap text-right">
+              <div class="flex justify-end gap-2">
+                <button
+                  *ngIf="showEditButton"
+                  (click)="onEdit(item)"
+                  class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg transition-all duration-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button
+                  *ngIf="showDeleteButton"
+                  (click)="onDelete(item)"
+                  class="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg transition-all duration-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+
+                <button
+                  *ngIf="showViewButton"
+                  (click)="onView(item)"
+                  class="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg transition-all duration-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M1.18164 12C2.12215 6.87976 6.60812 3 12.0003 3C17.3924 3 21.8784 6.87976 22.8189 12C21.8784 17.1202 17.3924 21 12.0003 21C6.60812 21 2.12215 17.1202 1.18164 12ZM12.0003 17C14.7617 17 17.0003 14.7614 17.0003 12C17.0003 9.23858 14.7617 7 12.0003 7C9.23884 7 7.00026 9.23858 7.00026 12C7.00026 14.7614 9.23884 17 12.0003 17ZM12.0003 15C10.3434 15 9.00026 13.6569 9.00026 12C9.00026 10.3431 10.3434 9 12.0003 9C13.6571 9 15.0003 10.3431 15.0003 12C15.0003 13.6569 13.6571 15 12.0003 15Z"></path></svg>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mode liste original -->
+    <div *ngIf="!useTableMode || columns.length === 0" class="divide-y divide-blue-100">
+      <ng-container *ngFor="let item of items">
+        <div class="p-6 hover:bg-blue-50 transition-colors">
+          <ng-container *ngIf="itemTemplate; else defaultTemplate">
+            <ng-container *ngTemplateOutlet="itemTemplate; context: { $implicit: item }"></ng-container>
+          </ng-container>
+          <ng-template #defaultTemplate>
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-xl font-medium text-blue-800">{{ getItemLabel(item) }}</h3>
+                <p *ngIf="getItemSubLabel(item)" class="text-sm text-blue-500">{{ getItemSubLabel(item) }}</p>
+              </div>
+              <div class="flex gap-2">
+                <button
+                  *ngIf="showEditButton"
+                  (click)="onEdit(item)"
+                  class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg transition-all duration-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+                <button
+                  *ngIf="showDeleteButton"
+                  (click)="onDelete(item)"
+                  class="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-lg transition-all duration-200">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </ng-template>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+
+  <ng-template #noItems>
+    <div class="p-6 text-center">
+      <p class="text-lg text-gray-500">{{ emptyMessage }}</p>
+    </div>
+  </ng-template>
+</div>
